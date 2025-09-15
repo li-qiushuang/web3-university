@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http, useAccount } from 'wagmi'
 import { mainnet, sepolia } from 'wagmi/chains'
 import { initializeExampleData } from './utils/storage';
 
+// 导入 Rainbow Kit
+import { RainbowKitProvider, lightTheme, ConnectButton } from '@rainbow-me/rainbowkit';
+import '@rainbow-me/rainbowkit/styles.css';
+
 // 组件导入
-import ConnectWallet from './components/ConnectWallet';
+// import ConnectWallet from './components/ConnectWallet';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -18,18 +22,24 @@ const queryClient = new QueryClient()
 
 // 配置wagmi - 使用Sepolia测试网
 const config = createConfig({
-  chains: [sepolia],
+  // chains: [sepolia],
+  // transports: {
+  //   [sepolia.id]: http(),
+  // },
+  // TODO: 上面和下面这种方式，在页面没看到区别呢？
+  chains: [mainnet, sepolia],
   transports: {
+    [mainnet.id]: http(),
     [sepolia.id]: http(),
   },
 })
 
 // 主应用组件
 function AppContent() {
-  const [currentPage, setCurrentPage] = useState('home'); //当前页面-首页
-  const { isConnected, isConnecting, isReconnecting } = useAccount(); //
+  const [currentPage, setCurrentPage] = useState('home'); //当前页面- 默认展示首页
+  const { isConnected, isConnecting, isReconnecting } = useAccount(); //useAccount：获取当前帐户的钩子
 
-  // 初始化示例数据
+  //TODO: 请求获取首页课程列表数据【暂时使用假数据】
   useEffect(() => {
     initializeExampleData();
   }, []);
@@ -46,9 +56,17 @@ function AppContent() {
     );
   }
 
-  // 如果未连接钱包，显示连接页面
+  // 如果未连接钱包，显示Rainbow Kit的连接页面
   if (!isConnected) {
-    return <ConnectWallet />;
+    return (
+      <div className="min-h-screen gradient-bg flex flex-col items-center justify-center p-4">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">欢迎来到教育平台</h1>
+          <p className="text-gray-600">连接您的钱包以开始使用</p>
+        </div>
+        <ConnectButton />
+      </div>
+    );
   }
 
   // 渲染主应用内容
@@ -83,7 +101,16 @@ function App() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <AppContent />
+        <RainbowKitProvider
+          chains={[mainnet, sepolia]}
+          theme={lightTheme({
+            accentColor: '#4f46e5',
+            accentColorForeground: 'white',
+            borderRadius: 'medium',
+          })}
+        >
+          <AppContent />
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

@@ -1,34 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
-import { BookOpen, Search, Filter, TrendingUp, Star } from 'lucide-react';
+import { useState } from 'react';
+// import { useAccount } from 'wagmi';
+import { BookOpen, Loader2 } from 'lucide-react';
 import CourseCard from '../components/CourseCard';
 import TokenSwap from '../components/TokenSwap';
-import { storage, initializeExampleData } from '../utils/storage';
-import { ethers } from 'ethers';
 import { useWeb3University } from './../utils/useWeb3University'
 
-
-
 const HomePage = () => {
-        const { address, isConnected } = useAccount();
-        const [searchTerm, setSearchTerm] = useState('');
+        // const { address, isConnected } = useAccount();
         const [purchasedCourses, setPurchasedCourses] = useState(new Set());
         const { useActiveCourses } = useWeb3University()
-        const filteredAndSortedCourses = []
-
-
 
         const {
                 data: activeCourses,
-                // isLoading,
-                // error
+                isLoading,
+                error
         } = useActiveCourses();
         console.log('activeCourses---', activeCourses)
-
-
-
-
-
 
 
         return (
@@ -38,39 +25,57 @@ const HomePage = () => {
                                         {/* 左侧：课程列表 */}
                                         <div className="flex-1">
 
-                                                {/* 课程网格 */}
-                                                {activeCourses?.length === 0 ? (
+                                                {/* 加载状态 */}
+                                                {isLoading && (
                                                         <div className="card p-12 text-center">
-                                                                <BookOpen className="mx-auto mb-4 text-gray-400" size={64} />
+                                                                <Loader2 className="mx-auto mb-4 text-blue-500 animate-spin" size={64} />
                                                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                                                        {searchTerm ? '未找到相关课程' : '暂无课程'}
+                                                                        课程加载中...
                                                                 </h3>
-                                                                <p className="text-gray-600">
-                                                                        {searchTerm
-                                                                                ? '尝试使用不同的关键词进行搜索'
-                                                                                : '课程正在准备中，敬请期待'}
-                                                                </p>
-                                                                {searchTerm && (
-                                                                        <button
-                                                                                onClick={() => setSearchTerm('')}
-                                                                                className="mt-4 btn-primary"
-                                                                        >
-                                                                                清除搜索
-                                                                        </button>
+                                                                <p className="text-gray-600">请稍等片刻</p>
+                                                        </div>
+                                                )}
+                                                {/* 错误状态 */}
+                                                {error && (
+                                                        <div className="card p-12 text-center">
+                                                                <AlertCircle className="mx-auto mb-4 text-red-500" size={64} />
+                                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                                        加载课程失败
+                                                                </h3>
+                                                                <p className="text-gray-600 mb-4">{error.message || "未知错误"}</p>
+                                                                <button
+                                                                        className="btn-primary"
+                                                                        onClick={() => window.location.reload()}
+                                                                >
+                                                                        重新加载
+                                                                </button>
+                                                        </div>
+                                                )}
+                                                {/* 正常状态 */}
+                                                {!isLoading && !error && (
+                                                        <>
+                                                                {/* 课程网格 */}
+                                                                {activeCourses?.length === 0 ? (
+                                                                        <div className="card p-12 text-center">
+                                                                                <BookOpen className="mx-auto mb-4 text-gray-400" size={64} />
+                                                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                                                        暂无课程
+                                                                                </h3>
+                                                                                <p className="text-gray-600">请稍后再来查看</p>
+                                                                        </div>
+                                                                ) : (
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                                                {activeCourses?.map((course) => (
+                                                                                        <CourseCard
+                                                                                                key={course.id.toString()}
+                                                                                                course={course}
+                                                                                                // onPurchase={handlePurchaseCourse}
+                                                                                                hasPurchased={purchasedCourses.has(course.id.toString())}
+                                                                                                showDetails={true}
+                                                                                        />
+                                                                                ))} </div>
                                                                 )}
-                                                        </div>
-                                                ) : (
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                                {activeCourses?.map((course) => (
-                                                                        <CourseCard
-                                                                                key={course.id.toString()}
-                                                                                course={course}
-                                                                                // onPurchase={handlePurchaseCourse}
-                                                                                hasPurchased={purchasedCourses.has(course.id.toString())}
-                                                                                showDetails={true}
-                                                                        />
-                                                                ))}
-                                                        </div>
+                                                        </>
                                                 )}
 
                                         </div>

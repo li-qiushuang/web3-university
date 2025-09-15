@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
-import { Plus, Upload, Video, Image, DollarSign, Sparkles, Eye, Save } from 'lucide-react';
+import { Plus, Upload, Video, DollarSign, Sparkles, Eye, Save } from 'lucide-react';
 import { PLATFORM_CONFIG } from '../config/contracts';
 import { useWeb3University } from './../utils/useWeb3University'
 

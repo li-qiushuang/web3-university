@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle, ShoppingCart, User, Clock, Star, Play } from 'lucide-react';
-import { ethers } from 'ethers';
+import { formatEther } from 'viem';
 import { storage } from '../utils/storage';
 
 const CourseCard = ({ course, onPurchase, hasPurchased = false, showDetails = false }) => {
@@ -20,7 +20,8 @@ const CourseCard = ({ course, onPurchase, hasPurchased = false, showDetails = fa
         // 格式化价格
         const formatPrice = (price) => {
                 try {
-                        const formatted = ethers.formatEther(price);
+                        // 如果 price 是 bigint 或 string，使用 formatEther
+                        const formatted = formatEther(BigInt(price || 0));
                         return parseFloat(formatted).toFixed(4);
                 } catch {
                         return '0.0000';
