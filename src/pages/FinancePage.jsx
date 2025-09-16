@@ -144,7 +144,8 @@ const FinancePage = () => {
         const [stakeAmount, setStakeAmount] = useState('');
         const [isConverting, setIsConverting] = useState(false);
         const [isStaking, setIsStaking] = useState(false);
-        const [activeStep, setActiveStep] = useState(2);// 1: DD->ETH, 2: ETH->USDT, 3: Stake USDT
+        const [activeStep, setActiveStep] = useState(3);// 1: DD->ETH, 2: ETH->USDT, 3: Stake USDT 
+        // activeStep这里的三个步骤：1跟哪个兑换工具里的流程一样，可以去掉，2是在uniswap界面实现的 所以重点就是3这里
         const [isApproving, setIsApproving] = useState(false);
         const [ethToUsdtQuote, setEthToUsdtQuote] = useState('0');
         const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -886,10 +887,31 @@ const FinancePage = () => {
                                                                 <div className="border border-green-200 rounded-lg p-6 bg-green-50">
                                                                         <h3 className="font-semibold text-green-800 mb-4 flex items-center">
                                                                                 <DollarSign className="mr-2" size={20} />
-                                                                                第二步：ETH转换为USDT
+                                                                                第二步：ETH转换为USDT【注意：这里的用页面的话不容易实现，暂时使用uniswap兑换】
                                                                         </h3>
+                                                                        <h6>已知 Sepolia USDT 合约地址是：0x7169D38820dfd117C3FA1f22a697dBA58d90BA06 【可以通过 Etherscan 的 Sepolia 版 https://sepolia.etherscan.io 查看详情】</h6>
+                                                                        <h4>第一：将USDT代币导入 MetaMask，【导入的时候不知道选择哪个可以直接将合约地址 0x7169D38820dfd117C3FA1f22a697dBA58d90BA06 粘贴进去】</h4>
+                                                                        <h4>第二：访问 Uniswap 的官方应用：https://app.uniswap.org/ ，然后连接你的 MetaMask 钱，确保 Uniswap 页面左上角显示的网络也是 “Sepolia”</h4>
+                                                                        <h4>第三：在 Uniswap 的兑换界面输入你想要卖出的测试 ETH 数量，下面会自动计算 “You receive” 的预估 USDT 数量，确认无误后提交即可</h4>
+                                                                        <h4>Uniswap 界面右上角会显示交易进度，交易成功后，在MetaMask界面也可以看到测试网 USDT 余额</h4>
+                                                                        {/* 为什么eth兑换usdt成功后，在https://sepolia.etherscan.io/txs?a=0x7169D38820dfd117C3FA1f22a697dBA58d90BA06 上看不到交易信息 */}
+                                                                        {/* 您调用 Uniswap 的 Router 合约：您的交易请求是发送给一个名为 “Uniswap V2: Router 2” 或 “Uniswap V3: Router” 的智能合约。
 
-                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+Router 合约代为执行：这个路由器合约是真正的执行者。它接收到您的 ETH，然后内部调用其他合约，完成一系列复杂操作（例如，通过多个资金池进行路由，最终将正确的 USDT 数量发送给您）。
+
+内部调用：在这个过程中，Router 合约会内部调用 USDT 合约的 transfer 方法，将 USDT 从流动性资金池转移到您的钱包地址。
+
+因此，从区块链的视角看：
+
+交易的 From（发起者）是您的钱包地址。
+
+交易的 To（接收者/主要合约）是 Uniswap 的 Router 合约地址。
+
+USDT 合约只是在 Router 合约执行过程中被内部调用的一个“配角”。
+
+所以，在 https://sepolia.etherscan.io/address/0x7169D38820dfd117C3FA1f22a697dBA58d90BA06 这个页面（USDT合约地址），您只能看到直接向该合约发起的交易， */}
+
+                                                                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                                                 <div>
                                                                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                                                                                 ETH数量
@@ -922,7 +944,7 @@ const FinancePage = () => {
                                                                                 ) : (
                                                                                         'ETH → USDT 兑换'
                                                                                 )}
-                                                                        </button>
+                                                                        </button> */}
                                                                 </div>
                                                         )}
 
