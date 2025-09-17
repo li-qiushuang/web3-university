@@ -231,91 +231,91 @@ const FinancePage = () => {
         };
 
         // 处理ETH到USDT的兑换
-        const handleETHToUSDT = async () => {
-                //TODO:待联调
-                if (!address) {
-                        alert('请先连接钱包');
-                        return;
-                }
+        // const handleETHToUSDT = async () => {
+        //         //TODO:待联调
+        //         if (!address) {
+        //                 alert('请先连接钱包');
+        //                 return;
+        //         }
 
-                if (!convertAmount || parseFloat(convertAmount) <= 0) {
-                        alert('请输入有效的ETH数量');
-                        return;
-                }
+        //         if (!convertAmount || parseFloat(convertAmount) <= 0) {
+        //                 alert('请输入有效的ETH数量');
+        //                 return;
+        //         }
 
-                // 检查网络
-                if (!isTestnet && chainId !== 1) {
-                        alert('请切换到以太坊主网或Sepolia测试网');
-                        return;
-                }
+        //         // 检查网络
+        //         if (!isTestnet && chainId !== 1) {
+        //                 alert('请切换到以太坊主网或Sepolia测试网');
+        //                 return;
+        //         }
 
-                const ethAmount = parseFloat(convertAmount);
-                console.log('ethAmount----', ethAmount)
-                // 检查ETH余额
-                if (!ethBalance || parseFloat(ethBalance.formatted) < ethAmount) {
-                        alert(`ETH余额不足。需要: ${ethAmount} ETH，当前余额: ${ethBalance?.formatted || '0'} ETH`);
-                        return;
-                }
+        //         const ethAmount = parseFloat(convertAmount);
+        //         console.log('ethAmount----', ethAmount)
+        //         // 检查ETH余额
+        //         if (!ethBalance || parseFloat(ethBalance.formatted) < ethAmount) {
+        //                 alert(`ETH余额不足。需要: ${ethAmount} ETH，当前余额: ${ethBalance?.formatted || '0'} ETH`);
+        //                 return;
+        //         }
 
-                setIsConverting(true);
-                try {
-                        console.log(`开始ETH到USDT兑换... 网络: ${isTestnet ? 'Sepolia测试网' : '以太坊主网'}`);
-                        console.log('输入ETH数量:', ethAmount);
-                        console.log('预期USDT数量:', ethToUsdtQuote);
+        //         setIsConverting(true);
+        //         try {
+        //                 console.log(`开始ETH到USDT兑换... 网络: ${isTestnet ? 'Sepolia测试网' : '以太坊主网'}`);
+        //                 console.log('输入ETH数量:', ethAmount);
+        //                 console.log('预期USDT数量:', ethToUsdtQuote);
 
-                        // 计算最小输出金额 (设置5%的滑点保护)
-                        const expectedUsdt = parseFloat(ethToUsdtQuote);
-                        const minAmountOut = expectedUsdt * 0.95; // 5% 滑点保护
+        //                 // 计算最小输出金额 (设置5%的滑点保护)
+        //                 const expectedUsdt = parseFloat(ethToUsdtQuote);
+        //                 const minAmountOut = expectedUsdt * 0.95; // 5% 滑点保护
 
-                        // 设置交易截止时间 (20分钟后)
-                        const deadline = Math.floor(Date.now() / 1000) + 1200;
+        //                 // 设置交易截止时间 (20分钟后)
+        //                 const deadline = Math.floor(Date.now() / 1000) + 1200;
 
-                        // USDT小数位数
-                        const usdtDecimals = isTestnet ? 18 : 6;
+        //                 // USDT小数位数
+        //                 const usdtDecimals = isTestnet ? 18 : 6;
 
-                        // 构建兑换参数
-                        const swapParams = {
-                                tokenIn: contracts.WETH,
-                                tokenOut: contracts.USDT,
-                                fee: isTestnet ? 10000 : 3000, // 测试网1%，主网0.3%
-                                recipient: address,
-                                deadline: deadline,
-                                amountIn: parseEther(ethAmount),
-                                amountOutMinimum: parseUnits(minAmountOut.toFixed(usdtDecimals), usdtDecimals),
-                                sqrtPriceLimitX96: 0
-                        };
+        //                 // 构建兑换参数
+        //                 const swapParams = {
+        //                         tokenIn: contracts.WETH,
+        //                         tokenOut: contracts.USDT,
+        //                         fee: isTestnet ? 10000 : 3000, // 测试网1%，主网0.3%
+        //                         recipient: address,
+        //                         deadline: deadline,
+        //                         amountIn: parseEther(ethAmount),
+        //                         amountOutMinimum: parseUnits(minAmountOut.toFixed(usdtDecimals), usdtDecimals),
+        //                         sqrtPriceLimitX96: 0
+        //                 };
 
-                        console.log('兑换参数:', swapParams);
+        //                 console.log('兑换参数:', swapParams);
 
-                        // 执行兑换交易
-                        await writeContract({
-                                address: contracts.UNISWAP_V3_ROUTER,
-                                abi: SWAP_ROUTER_ABI,
-                                functionName: 'exactInputSingle',
-                                args: [swapParams],
-                                value: parseEther(ethAmount) // 发送ETH
-                        });
+        //                 // 执行兑换交易
+        //                 await writeContract({
+        //                         address: contracts.UNISWAP_V3_ROUTER,
+        //                         abi: SWAP_ROUTER_ABI,
+        //                         functionName: 'exactInputSingle',
+        //                         args: [swapParams],
+        //                         value: parseEther(ethAmount) // 发送ETH
+        //                 });
 
-                } catch (error) {
-                        console.error('ETH到USDT兑换失败:', error);
-                        let errorMessage = '兑换失败，请重试';
+        //         } catch (error) {
+        //                 console.error('ETH到USDT兑换失败:', error);
+        //                 let errorMessage = '兑换失败，请重试';
 
-                        if (error.message.includes('user rejected')) {
-                                errorMessage = '用户取消了交易';
-                        } else if (error.message.includes('insufficient funds')) {
-                                errorMessage = 'ETH余额不足或Gas费不够';
-                        } else if (error.message.includes('INSUFFICIENT_OUTPUT_AMOUNT')) {
-                                errorMessage = '滑点过大，请重试或增加滑点容忍度';
-                        } else if (error.message.includes('execution reverted')) {
-                                errorMessage = isTestnet ?
-                                        '交易失败，可能是测试网流动性不足或合约地址不正确' :
-                                        '交易失败，请检查网络状态';
-                        }
+        //                 if (error.message.includes('user rejected')) {
+        //                         errorMessage = '用户取消了交易';
+        //                 } else if (error.message.includes('insufficient funds')) {
+        //                         errorMessage = 'ETH余额不足或Gas费不够';
+        //                 } else if (error.message.includes('INSUFFICIENT_OUTPUT_AMOUNT')) {
+        //                         errorMessage = '滑点过大，请重试或增加滑点容忍度';
+        //                 } else if (error.message.includes('execution reverted')) {
+        //                         errorMessage = isTestnet ?
+        //                                 '交易失败，可能是测试网流动性不足或合约地址不正确' :
+        //                                 '交易失败，请检查网络状态';
+        //                 }
 
-                        alert(errorMessage);
-                        setIsConverting(false);
-                }
-        };
+        //                 alert(errorMessage);
+        //                 setIsConverting(false);
+        //         }
+        // };
 
         // 处理AAVE质押
         const handleStakeToAave = async () => {

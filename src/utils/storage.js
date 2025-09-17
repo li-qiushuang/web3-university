@@ -113,6 +113,11 @@ export const storage = {
         saveSetting: (key, value) => memoryStorage.saveSetting(key, value),
         getSetting: (key, defaultValue) => memoryStorage.getSetting(key, defaultValue),
 
+        // 签名相关（新增）
+        saveSignatureData: (address, signatureData) => saveSignatureData(address, signatureData),
+        getSignatureData: (address) => getSignatureData(address),
+        clearSignatureData: (address) => clearSignatureData(address),
+
         // 工具方法
         clearAll: () => memoryStorage.clearAll(),
         getAllData: () => memoryStorage.getAllData()
@@ -154,4 +159,23 @@ export const initializeExampleData = () => {
         exampleCourses.forEach(course => {
                 memoryStorage.saveCourse(course.id, course);
         });
+};
+
+// 保存签名数据
+export const saveSignatureData = (address, signatureData) => {
+        const key = `signature_${address}`;
+        localStorage.setItem(key, JSON.stringify(signatureData));
+};
+
+// 获取签名数据
+export const getSignatureData = (address) => {
+        const key = `signature_${address}`;
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+};
+
+// 清除签名数据
+export const clearSignatureData = (address) => {
+        const key = `signature_${address}`;
+        localStorage.removeItem(key);
 };
